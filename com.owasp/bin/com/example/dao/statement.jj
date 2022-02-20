@@ -1,0 +1,423 @@
+options
+{
+  static = false;
+  
+JAVA_UNICODE_ESCAPE = true;
+}
+
+PARSER_BEGIN(FindStatement)
+package com.example.dao;
+
+public class FindStatement
+{
+  public static void main(String args []) throws ParseException
+  {
+   	
+    FindStatement parser = new FindStatement(System.in);
+    parser.CompilationUnit();
+   
+    
+  }
+}
+
+PARSER_END(FindStatement)
+
+TOKEN : 
+{
+ < STRING_LITERAL:
+      "\""
+      (   (~["\""])
+   
+      )*
+      "\""
+  >
+}
+
+SKIP : 
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+| "\f"
+
+}
+
+SPECIAL_TOKEN :
+{
+  <SINGLE_LINE_COMMENT: "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>
+| <FORMAL_COMMENT: "/**" (~["*"])* "*" ("*" | (~["*","/"] (~["*"])* "*"))* "/">
+| <MULTI_LINE_COMMENT: "/*" (~["*"])* "*" ("*" | (~["*","/"] (~["*"])* "*"))* "/">
+}
+
+
+
+MORE : { 
+
+	< "/*" > : IN_BLOCK_COMMENT 
+
+}
+
+<IN_BLOCK_COMMENT> MORE : { 
+
+	< ~[] > 
+
+}
+
+<IN_BLOCK_COMMENT> SPECIAL_TOKEN : { 
+
+	<BLOCK_COMMENT : "*/" > : DEFAULT 
+
+}
+
+TOKEN: {
+
+  < LPAREN: "(" >
+| < RPAREN: ")" >
+| < LBRACE: "{" >
+| < RBRACE: "}" >
+| < LBRACKET: "[" >
+| < RBRACKET: "]" >
+| < SEMICOLON: ";" >
+| < COMMA: "," >
+| < DOT: "." >
+
+  }
+TOKEN : 
+{
+  < ABSTRACT: "abstract" >
+| < BOOLEAN: "boolean" >
+| < BREAK: "break" >
+| < BYTE: "byte" >
+| < CASE: "case" >
+| < CATCH: "catch" >
+| < CHAR: "char" >
+| < CLASS: "class" >
+| < CONST: "const" >
+| < CONTINUE: "continue" >
+| < _DEFAULT: "default" >
+| < DO: "do" >
+| < DOUBLE: "double" >
+| < ELSE: "else" >
+| < EXTENDS: "extends" >
+| < FALSE: "false" >
+| < FINAL: "final" >
+| < FINALLY: "finally" >
+| < FLOAT: "float" >
+| < FOR: "for" >
+| < GOTO: "goto" >
+| < IF: "if" >
+| < IMPLEMENTS: "implements" >
+| < IMPORT: "import" >
+| < INSTANCEOF: "instanceof" >
+| < INT: "int" >
+| < INTERFACE: "interface" >
+| < LONG: "long" >
+| < NATIVE: "native" >
+| < NEW: "new" >
+| < NULL: "null" >
+| < PACKAGE: "package">
+| < PRIVATE: "private" >
+| < PROTECTED: "protected" >
+| < PUBLIC: "public" >
+| < RETURN: "return" >
+| < SHORT: "short" >
+| < STATIC: "static" >
+| < SUPER: "super" >
+| < SWITCH: "switch" >
+| < SYNCHRONIZED: "synchronized" >
+| < THIS: "this" >
+| < THROW: "throw" >
+| < THROWS: "throws" >
+| < TRANSIENT: "transient" >
+| < TRUE: "true" >
+| < TRY: "try" >
+| < VOID: "void" >
+| < VOLATILE: "volatile" >
+| < WHILE: "while" >
+}
+
+
+TOKEN: { < IDENTIFIER: <LETTER> (<LETTER>|<DIGIT>)* >
+|
+  < #LETTER:
+      [
+      
+       "a"-"z",
+     
+       "A"-"Z","_","-"
+    
+      ]
+  >
+|
+  < #DIGIT:
+      [
+       "0"-"9"
+      
+      ]
+  > }
+  void CompilationUnit() :
+{}
+{
+  
+  [ PackageDeclaration() ]
+  ( ImportDeclaration() )*
+  (
+    AnnotationDeclaration())*
+  ( TypeDeclaration() )*
+  <EOF>
+}
+void AnnotationDeclaration():
+{ }
+{
+	"@" Name()
+  }
+void PackageDeclaration() :
+{}
+{
+  "package" Name() ";"
+}
+
+void ImportDeclaration() :
+{}
+{
+  "import" Name() [ "." "*" ] ";"
+}
+
+void TypeDeclaration() :
+{}
+{
+  LOOKAHEAD( ( "abstract" | "final" | "public" )* "class" ) { System.out.println("cc");}
+  ClassDeclaration() { System.out.println("classdecl");}
+  | MethodDeclaration() { System.out.println("method");}
+  | FieldDeclaration()
+
+  
+}
+void InterfaceDeclaration() :
+{}
+{
+  ( "abstract" | "public" )*
+  "interface" <IDENTIFIER> [ "extends" Name() ]
+  "{" ( InterfaceMemberDeclaration() )* "}"
+}
+void MethodDeclarationLookahead() :
+{}
+{
+  ( "public" | "protected" | "private" | "static" | "abstract" | "final"  )*
+  ResultType() <IDENTIFIER> "("
+}
+void InterfaceMemberDeclaration() :
+{}
+{
+  LOOKAHEAD( MethodDeclarationLookahead() )
+  MethodDeclaration()
+|
+  FieldDeclaration()
+}
+void ClassDeclaration() :
+{}
+{
+  ( "abstract" | "final" | "public" )*
+  "class" <IDENTIFIER> [ "extends" Name() ] [ "implements" Name() ] 
+  "{" ( ClassBodyDeclaration() )* "}"
+  {
+    System.out.println("class");
+  }
+}
+
+void ClassBodyDeclaration() :
+{}
+{
+InterfaceMemberDeclaration()
+
+}
+void FieldAlone():
+{
+}
+{
+Type() ["("(< STRING_LITERAL>|Name())* ")" ] ";"
+  }
+void FieldDeclaration() :
+{Token t;
+String zx ="";
+String s="";
+String d ="";
+String z = "";
+java.util.ArrayList < String> line = new java.util.ArrayList();
+}
+{
+
+
+  
+
+LOOKAHEAD(VariableDeclarator() ";")[VariableDeclarator()] ";"
+| ( "public" | "protected" | "private" | "static" | "final"  )*
+ s=Type() { System.out.println(s);}  d=VariableDeclarator() ( "," z=VariableDeclarator()  )* ";" { zx += s+" "+d+z; System.out.println("2. "+zx);line.add(zx); System.out.println(line);}
+
+}
+
+String VariableDeclaratorId() :
+{Token t;}
+{
+  t=<IDENTIFIER> ( "[" "]" )* {
+return t.image; 
+    }
+}
+String VariableInitializer() :
+{String a="";}
+{
+  a=Expression() { return a;}
+}
+String VariableDeclarator() :
+{Token t;
+String r="";
+String z = "";
+}
+{
+  r=VariableDeclaratorId() [ "+=" z=VariableInitializer() {r += "="+z; } | "=" z=VariableInitializer() {r += "="+z; } ]
+{
+System.out.println("1. "+r);
+}
+	{
+	return r;
+	}
+}
+String Type() :
+{String type="";
+String tem="";
+}
+{
+  ( type=PrimitiveType() | type=Name() ) ( "[" "]" { type +="[]";}) * 
+  {
+	return type;
+  }
+}
+
+String PrimitiveType() :
+{}
+{
+  "boolean" { return "boolean";}
+|
+  "char"{ return "char";}
+|
+  "String"{ return "String";}
+|
+  "PreparedStatement"{ return "PreparedStatement";}
+|
+  "int"{ return "int";}
+|
+  "Statement"{ return "Statement";}
+|
+  "ResultSet"{ return "ResultSet";}
+|
+  "double"{ return "double";}
+
+}
+
+String Name() :
+
+{Token t;
+String a="";}
+{
+ t =<IDENTIFIER> { a = t.image;}
+  ( "." t=<IDENTIFIER> { a += "."+t.image;}
+  )*
+
+  {
+    return a;
+  }
+}
+
+String Expression() :
+{String exp="";}
+{
+  exp=Assignment() {return exp;} 
+
+}
+String Assignment() :
+{Token t = null;
+String a="";
+String b="";
+String tem="";}
+{
+  t=< STRING_LITERAL> ["+" b = Name()] { return a+t.image+b;}| LOOKAHEAD(Name() StringIn(t)) a = Name() b= StringIn(t) { a += b; return a;} | a=Name()  ["(" [tem=Name()] ")"] {if(tem == "") { a += "()";} else { a += "("+tem + " )"; }}  ("+"b=Name() ["(" [tem=Name()] ")" ] )*{if(b=="") { } else {  if(tem == "") { b += "()";} else { b += "("+tem + " )"; }} a+=b;return a;}
+| "new" a=Name()["(" [tem=Name()] ")"] {a = "new"+" " +a+tem; return a+=b;} | "null" { a = "null";} 
+{
+return a+=b;
+}
+}
+
+String StringIn(Token t): { }
+{
+  "("  t=< STRING_LITERAL>")" {return "(" +t.image + ")";}
+}
+
+
+void MethodDeclaration() :
+{}
+{
+  ( "public" | "protected" | "private" | "static" | "abstract" | "final"  )*
+  ResultType() MethodDeclarator() { System.out.println("resultfinish");}
+  ( Block() | ";" ) { System.out.println("methodfinish");}
+}
+
+void MethodDeclarator() :
+{}
+{
+  <IDENTIFIER> FormalParameters() ( "[" "]" )*
+}
+
+void FormalParameters() :
+{}
+{
+  "(" [ FormalParameter() ( "," FormalParameter() )* ] ")"
+}
+
+void FormalParameter() :
+{}
+{
+  Type() VariableDeclaratorId()
+}
+void Block() :
+{}
+{
+  "{" ( BlockStatement() )* "}"
+}
+
+void BlockStatement() :
+{}
+{
+LOOKAHEAD(FieldAlone())
+ FieldAlone()
+|   FieldDeclaration()
+
+| TryStatement() { System.out.println("pretry");}
+
+
+}
+void ResultType() :
+{}
+{
+  "void"
+|
+  Type()
+
+}
+void LocalVariableDeclaration() :
+{}
+{
+  {
+System.out.println("in");
+  }
+FieldDeclaration() 
+}
+
+void TryStatement() :
+
+{}
+{
+  "try" Block() { System.out.println("try");}
+  ( "catch" "(" FormalParameter() ")" Block() )*
+  [ "finally" Block() ]
+}
